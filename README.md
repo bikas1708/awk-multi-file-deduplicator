@@ -1,163 +1,245 @@
-# AWK Multi-File Deduplication Toolkit
+# 🛠 AWK Multi-File Deduplication Toolkit
 
-**A collection of AWK-powered Bash scripts to:**
+This toolkit is designed to help efficiently compare and deduplicate large, delimited text files using AWK-based Bash scripts. When you're working with massive datasets (e.g., log files, CSVs, export dumps), checking for duplicates or unique records manually is error-prone and slow. These tools allow you to compare files by a specific field (e.g., user ID, transaction code) and extract meaningful data faster than loading into spreadsheets or custom applications.
+
+A collection of **AWK-powered Bash scripts** to:
+
 - Compare 2 or more delimited files
-- Deduplicate based on configurable keyword fields
-- Support custom delimiters
-- Preserve original order
-- Filter unique, duplicate, or all records
-
-## 🔧 Usage
-
-```bash
-./multi_file_compare.sh unique "|" file1.txt:1 file2.txt:2 file3.txt:3 > output.txt
-
-
-## **normal_script.sh**
- - This contains simple awk command to check a file for duplicate key, run on the terminal.
- - This does not check using the whole record but only uses a specific keyword location.
-
- - Your file (file.txt) looks like this:
-
-        |---|---|---|
-        | apple | fruit | 123 |
-        | banana | fruit | 456 |
-        | apple | fruit | 789 |
-        | orange | fruit | 789 |
-        | grape | fruit | 123 |
-        | banana | fruit | 111 |
-    
-  - 📄 Example Output (output.txt), if using field $1:
-
-        |---|---|---|
-        | orange | fruit | 789 |
-        | grape | fruit | 123 |
-
-        ```bash
-        awk -F'|' '{count[$1]++; lines[$1]=$0} END {for (k in count) if (count[k]==1) print lines[k]}' file.txt > output.txt
-    
-    - -F'|' sets the delimiter.
-    - $1 is the keyword field (change to $2, $3, etc. as needed).
-    - count[$1]++ counts occurrences of the keyword.
-    - lines[$1]=$0 stores the full line.
-    - Only prints lines where the keyword appeared once.
-    - This can be used only when we have duplicate records in the same file and the keyword position is same 
-    - NOTE: This doesn't check if each record/row is duplicate but only checks if the keyword is duplicate
-
-    🛠 To change the field:
-    To use a different field as the keyword (e.g., second field), change $1 to $2, etc. everywhere in the command.
-
-## **awk_unique_2files.sh**
- - This contains awk command to check duplicate key from 2 Files and fetch only ones which are unique, run on the terminal.
-
-        ```bash
-        awk -F'|' '
-            FNR==NR { seen[$1]++; file1[$1]=$0; next }
-            { seen[$1]++; file2[$1]=$0 }
-            END {
-                for (k in seen) {
-                    if (seen[k] == 1) {
-                        if (k in file1) print file1[k]
-                        else if (k in file2) print file2[k]
-                    }
-                }
-            }
-        ' file1.txt file2.txt > output.txt
-
-    - FNR==NR is true for the first file (only) — collects line by keyword into file1.
-    - Second file is then read — same for file2.
-    -  seen[k] tracks how many times the keyword appears across both files.
-    - Only prints those where the keyword appeared exactly once.
-
-    🛠 To change the field:
-    To use a different field as the keyword (e.g., second field), change $1 to $2, etc. everywhere in the command.
-    You can change $1, $2, etc., based on which field has the keyword in each file.
-
-    🧠 How to customize:
-
-    | File        | Keyword field |
-    | ----------- | ------------- |
-    | `file1.txt` | `key1 = $1`   |
-    | `file2.txt` | `key2 = $2`   |
-
-## **unique_by_key.sh**
- - This is a bash script which take in input parameter of 2 file name and The keyword (field) position for each file.
- - NOTE: This can handle only 2 files and only returns key which appears exactly once across both files.
-
-    ## 🧪 Example Usage
-    
-        ```bash
-        - chmod +x unique_by_key.sh
-        - ./unique_by_key.sh file1.txt 1 file2.txt 2 > output.txt
-
-    - 1 is the keyword field position in file1.txt
-    - 2 is the keyword field position in file2.txt
-    - Output is saved to output.txt
-
-
-## **unique_by_key_delim.sh**
- - This is a bash script which takes in input parameters of 2 file name and The keyword (field) position for each file, this also takes in delimiter as input
- - NOTE : This version Supports custom delimiter
-
-    ## 🧪 Example:
-
-        ```bash
-        ./unique_by_key_delim.sh file1.txt 1 file2.txt 2 "|" > output.txt
-
-
-📜 Scripts
-
-| Script                     | Description                               | 
-| -------------------------- | ----------------------------------------- | 
-| `multi_file_compare.sh`    | Compare N files with configurable keys    | 
-| `unique_by_key.sh`         | Compare 2 files using fixed \` delimiter  | 
-| `unique_by_key_delim.sh`   | Same as above, but with custom delimiter  | 
-| `unique_by_key_ordered.sh` | Preserve order of appearance              | 
-| `unique_or_duplicates.sh`  | Add filtering mode (unique/duplicate/all) | 
-
-
-
+- Deduplicate based on keyword field positions
+- Support custom delimiters (`|`, `,`, `;`, etc.)
+- Preserve original order of entries (optional)
+- Filter for `unique`, `duplicate`, or `all` records across files
 
 ---
-### Scripts still Pending.
 
-    - unique_by_key_ordered 
-    - unique_or_duplicates
+## 📦 Available Scripts
 
+| Script Name                | Description                                                         |
+| -------------------------- | ------------------------------------------------------------------- |
+| `normal_script.sh`         | Deduplicate within a **single file** using a specific keyword field |
+| `awk_unique_2files.sh`     | Compare **two files** and extract unique keywords                   |
+| `unique_by_key.sh`         | Bash script to compare 2 files with field positions as input        |
+| `unique_by_key_delim.sh`   | Same as above, but supports **custom delimiters**                   |
+| `unique_by_key_ordered.sh` | Preserves original order of matching records                        |
+| `multi_file_compare.sh`    | Compare **multiple files** with field-key and mode flexibility      |
 
+---
 
-### FAQ 
+## 🔧 Usage Examples
 
-    🧰 What is awk?
-    awk is a text processing language.
+### 🔹 Compare Multiple Files (flexible)
 
-    It's used to scan, filter, analyze, and format text, especially structured text (like CSV, TSV, logs).
-    Named after its creators: Aho, Weinberger, and Kernighan.
+```bash
+./multi_file_compare.sh unique "|" \
+  file1.txt:1 \
+  file2.txt:2 \
+  file3.txt:3 > unique_output.txt
+```
 
+### 🔹 Keep only duplicate records across 3 files
 
-    🧠 What Does awk Do?
-    Think of awk like a spreadsheet processor for lines of text.
-    It reads each line (record) one at a time.
-    It splits each line into fields (like columns) based on a delimiter (default is space).
-    It lets you act on those fields: print them, compare them, aggregate them, etc.
+```bash
+./multi_file_compare.sh duplicate "|" \
+  file1.txt:1 file2.txt:2 file3.txt:3 > duplicates.txt
+```
 
+### 🔹 Run basic single-file deduplication
 
+```bash
+awk -F'|' '{count[$1]++; lines[$1]=$0} END {for (k in count) if (count[k]==1) print lines[k]}' file.txt > output.txt
+```
 
-    🔧 Why use FNR==NR?
-    When you're processing multiple files in one awk pass, you need a way to distinguish which file you're currently processing.
+- `-F'|'` → sets delimiter
+- `$1` → keyword field (change to `$2`, `$3`, etc.)
+- Keeps only lines where the keyword appears exactly once in the file
 
-    ```awk
-    FNR==NR {
-        # This block runs only for file1
-        ...
-    next
-    }
-    # This block runs for file2
-    ...
+---
 
-    Step-by-step:
-        - awk starts reading file1.txt.
-        - Since it's the first file, FNR == NR is true.
-        - After next, awk skips to next line without running the rest of the script.
-        - When it switches to file2.txt, FNR resets to 1, but NR continues — now FNR != NR, so awk skips the first block and executes the second.
+## 📂 Sample Input & Output
 
+### 📁 `file1.txt`
+
+```
+apple|fruit|100
+banana|fruit|200
+cherry|fruit|300
+```
+
+### 📁 `file2.txt`
+
+```
+kiwi|banana|150
+lemon|fruit|250
+mango|fruit|300
+```
+
+### 📁 `file3.txt`
+
+```
+date|cherry|400
+elderberry|fruit|500
+fig|fruit|600
+```
+
+### 🧪 Example: Unique keywords across 3 files
+
+```bash
+./multi_file_compare.sh unique "|" file1.txt:1 file2.txt:2 file3.txt:2
+```
+
+✅ **Expected Output:**
+
+```
+apple|fruit|100
+kiwi|banana|150
+lemon|fruit|250
+mango|fruit|300
+date|cherry|400
+elderberry|fruit|500
+fig|fruit|600
+```
+
+### 🧪 Example: Duplicate keywords across 3 files
+
+```bash
+./multi_file_compare.sh duplicate "|" file1.txt:1 file2.txt:2 file3.txt:2
+```
+
+✅ **Expected Output:**
+
+```
+banana|fruit|200
+cherry|fruit|300
+```
+
+### 🧪 Example: Single file keyword-based deduplication
+
+#### 📁 `file.txt`
+
+```
+apple|fruit|100
+banana|fruit|200
+apple|fruit|300
+cherry|fruit|400
+banana|fruit|500
+date|fruit|600
+```
+
+```bash
+awk -F'|' '{count[$1]++; lines[$1]=$0} END {for (k in count) if (count[k]==1) print lines[k]}' file.txt
+```
+
+✅ **Expected Output:**
+
+```
+cherry|fruit|400
+date|fruit|600
+```
+
+---
+
+## 🧺script: `unique_by_key.sh`
+
+Compare two files using keyword field positions:
+
+```bash
+chmod +x unique_by_key.sh
+./unique_by_key.sh file1.txt 1 file2.txt 2 > output.txt
+```
+
+- `1` = field in `file1.txt`
+- `2` = field in `file2.txt`
+- Output written to `output.txt`
+
+---
+
+## 🧺 Script: `unique_by_key_delim.sh`
+
+Same as above, but allows custom delimiter (e.g., `|`, `,`, etc.):
+
+```bash
+./unique_by_key_delim.sh file1.txt 1 file2.txt 2 "|" > output.txt
+```
+
+---
+
+## 🧺 Script: `unique_by_key_ordered.sh`
+
+Preserves the original order of records (instead of sorting/grouping):
+
+```bash
+./unique_by_key_ordered.sh file1.txt 1 file2.txt 2 "|" > output.txt
+```
+
+---
+
+## 🧬 How `multi_file_compare.sh` Works
+
+- Accepts **any number of files**
+- Format: `filename:field_position`
+- Modes:
+  - `unique`: only keywords seen once across all files
+  - `duplicate`: keywords seen more than once
+  - `all`: include everything
+
+### Example:
+
+```bash
+./multi_file_compare.sh all "|" \
+  file1.txt:1 file2.txt:2 file3.txt:3 > all_records.txt
+```
+
+---
+
+## ⚙️ Customize by Field
+
+| File        | Field Position |
+| ----------- | -------------- |
+| `file1.txt` | 1              |
+| `file2.txt` | 2              |
+| `file3.txt` | 2              |
+
+---
+
+## 🤔 FAQ
+
+### ❓ What is `awk`?
+
+`awk` is a powerful UNIX text-processing language. It reads lines of text, splits them into fields (by a delimiter), and lets you analyze, filter, and transform them.
+
+---
+
+### ❓ What does `FNR==NR` mean in `awk`?
+
+Used when comparing **two files** in a single `awk` call:
+
+```awk
+FNR == NR {
+  # This runs for the first file
+  ...
+  next
+}
+# This runs for the second file
+```
+
+- `FNR` = current file’s line number
+- `NR` = total line number across all files
+- `FNR == NR` is only true **for the first file**
+
+---
+
+## 📜 License
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+## 🙌 Contribute
+
+Feel free to open pull requests or submit issues! This repo is built to help anyone dealing with messy file merges, deduplication, and record-level analysis using simple command-line tools.
