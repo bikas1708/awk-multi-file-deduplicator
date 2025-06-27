@@ -1,0 +1,6 @@
+apple|fruit|100
+banana|fruit|200
+apple|fruit|300
+cherry|fruit|400
+banana|fruit|500
+date|fruit|600

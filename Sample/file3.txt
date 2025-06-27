@@ -1,0 +1,3 @@
+date|cherry|400
+elderberry|fruit|500
+fig|fruit|600

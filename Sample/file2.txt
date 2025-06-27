@@ -1,0 +1,3 @@
+kiwi|banana|150
+lemon|fruit|250
+mango|fruit|300
