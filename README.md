@@ -203,6 +203,17 @@ Preserves the original order of records (instead of sorting/grouping):
 
 ## 🤔 FAQ
 
+### ❓ Why did I make this `script`?
+
+Currently while migrating data in pipe separated format I found that many mismatch were there in files which should have the same record count.
+For this I needed to find the unique records which were present and then check from there why the record is present/absent from each file.
+But the problem I faced was each file had more than a million record, this makes finding the unique records tough and adding to that each file had a different format.
+No two records were the same, the only similarity was 1 specific keyword / primary key, so to make my task easier I made this script.
+Now I just have to run this and get the unique records and check why the entry is there.
+I hope that you find this useful for your analysis / ETL task and makes life a bit easier for you.
+
+---
+
 ### ❓ What is `awk`?
 
 `awk` is a powerful UNIX text-processing language. It reads lines of text, splits them into fields (by a delimiter), and lets you analyze, filter, and transform them.
